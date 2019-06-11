@@ -5,7 +5,8 @@ class SessionsController < ApiController
   def create
     if user = User.valid_login(params[:email], params[:password])
       user.regenerate_token
-      render json: { token: user.token }
+      cookies.signed[:token] = {value: user.token, httponly: true}
+      render json: { id: user.id, email: user.email }
     else
       render_unauthorized('Error with your login or password')
     end
@@ -24,5 +25,6 @@ class SessionsController < ApiController
 
   def logout
     current_user.invalidate_token
+    cookies.delete(:token)
   end
 end
